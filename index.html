@@ -1,255 +1,361 @@
 <!DOCTYPE html>
 <html lang="en">
 <head>
-  <meta charset="UTF-8" />
-  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
-  <title>The Hacuasation Hall of Fame</title>
-  <script src="https://cdn.tailwindcss.com"></script>
-  <style>
-    html, body {
-      margin: 0;
-      padding: 0;
-      height: 100%;
-      width: 100%;
-      overflow-x: hidden;
-      font-family: 'Inter', sans-serif;
-      background: #0b0616;
-    }
-
-    .gallery-grid {
-      display: grid;
-      grid-template-columns: repeat(auto-fill, minmax(280px, 1fr));
-      gap: 1.5rem;
-    }
-
-    .gallery-card {
-      background-color: rgba(33, 23, 54, 0.85);
-      border-radius: 1rem;
-      overflow: hidden;
-      box-shadow: 0 0 20px rgba(167, 139, 250, 0.25);
-      transition: transform 0.3s ease, box-shadow 0.3s ease;
-      display: flex;
-      flex-direction: column;
-      align-items: center;
-      cursor: pointer;
-    }
-
-    .gallery-card:hover {
-      transform: translateY(-5px);
-      box-shadow: 0 0 25px rgba(167, 139, 250, 0.4);
-    }
-
-    .gallery-card img {
-      width: 100%;
-      height: auto;
-      display: block;
-    }
-
-    .gallery-card p {
-      text-align: center;
-      padding: 0.75rem;
-      font-size: 0.9rem;
-      color: #d1c4f7;
-      width: 100%;
-      background-color: rgba(18, 10, 32, 0.8);
-    }
-
-    /* Fullscreen viewer */
-    #imageModal {
-      display: none;
-      position: fixed;
-      z-index: 50;
-      inset: 0;
-      background: rgba(0, 0, 0, 0.9);
-      justify-content: center;
-      align-items: center;
-    }
-
-    #imageModal img {
-      max-width: 90%;
-      max-height: 90%;
-      border-radius: 1rem;
-    }
-
-    #imageModal:target {
-      display: flex;
-    }
-
-    .close-btn {
-      position: absolute;
-      top: 20px;
-      right: 30px;
-      font-size: 2rem;
-      color: white;
-      cursor: pointer;
-    }
-
-    /* Liquid Chrome background */
-    #liquidChromeBackground {
-      position: fixed;
-      top: 0;
-      left: 0;
-      width: 100vw;
-      height: 100vh;
-      z-index: -1;
-      overflow: hidden;
-    }
-  </style>
-
-  <!-- OGL dependency for Liquid Chrome -->
-  <script type="module">
-    import { Renderer, Program, Mesh, Triangle } from 'https://esm.sh/ogl';
-
-    window.addEventListener('DOMContentLoaded', () => {
-      const container = document.createElement('div');
-      container.id = 'liquidChromeBackground';
-      document.body.appendChild(container);
-
-      const renderer = new Renderer({ antialias: true });
-      const gl = renderer.gl;
-      container.appendChild(gl.canvas);
-
-      const vertex = `
-        attribute vec2 position;
-        attribute vec2 uv;
-        varying vec2 vUv;
-        void main() {
-          vUv = uv;
-          gl_Position = vec4(position, 0.0, 1.0);
-        }`;
-
-      const fragment = `
-        precision highp float;
-        uniform float uTime;
-        uniform vec3 uResolution;
-        varying vec2 vUv;
-        vec4 render(vec2 uv) {
-          vec2 p = (2.0 * uv - 1.0) * vec2(uResolution.x / uResolution.y, 1.0);
-          for (float i = 1.0; i < 10.0; i++){
-              p.x += 0.3 / i * cos(i * 3.0 * p.y + uTime);
-              p.y += 0.3 / i * sin(i * 3.0 * p.x + uTime);
-          }
-          vec3 color = vec3(0.4, 0.1, 0.8) / abs(sin(uTime - p.y - p.x));
-          return vec4(color, 1.0);
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Hackusation Library</title>
+    
+    <style>
+        @keyframes cursor-blink {
+            0%, 100% {opacity: 1;}
+            50% {opacity: 0;}
         }
-        void main() {
-          gl_FragColor = render(vUv);
-        }`;
-
-      const program = new Program(gl, {
-        vertex,
-        fragment,
-        uniforms: {
-          uTime: { value: 0 },
-          uResolution: { value: new Float32Array([window.innerWidth, window.innerHeight, window.innerWidth / window.innerHeight]) }
+        @keyframes neon-pulse {
+            0% {box-shadow: 0 0 12px #ffff00, 0 0 25px #ffcc00;}
+            50% {box-shadow: 0 0 18px #fffa65, 0 0 40px #ffff00;}
+            100% {box-shadow: 0 0 12px #ffff00, 0 0 25px #ffcc00;}
         }
-      });
+        @keyframes trail-glow {
+            0% {transform: scaleX(0); opacity: 0;}
+            50% {transform: scaleX(1); opacity: 0.7;}
+            100% {transform: scaleX(0); opacity: 0;}
+        }
+        @keyframes glitch {
+            0% {text-shadow: 2px 0 0 #f00, -2px 0 0 #00f;}
+            25% {text-shadow: -2px 0 0 #f00, 2px 0 0 #00f;}
+            50% {text-shadow: 2px 0 0 #f00, -2px 0 0 #00f;}
+            75% {text-shadow: -2px 0 0 #f00, 2px 0 0 #00f;}
+            100% {text-shadow: 0 0 0 transparent, 0 0 0 transparent;}
+        }
+        @keyframes shooting-star {
+            0% {
+                transform: translate(-100vw, -100vh) rotate(45deg); 
+                opacity: 0;
+            }
+            1% {
+                opacity: 1; 
+            }
+            100% {
+                transform: translate(100vw, 100vh) rotate(45deg); 
+                opacity: 0;
+            }
+        }
+        @keyframes screen-jitter {
+            0%, 100% { transform: translate(0.5px, 0.5px); }
+            50% { transform: translate(-0.5px, -0.5px); }
+        }
 
-      const mesh = new Mesh(gl, { geometry: new Triangle(gl), program });
+        body {
+            font-family: 'Consolas', 'Courier New', monospace;
+            background-color: #000000;
+            color: #d1d5db;
+            display: flex;
+            justify-content: center;
+            align-items: flex-start;
+            min-height: 100vh;
+            margin: 0;
+            padding: 40px 20px;
+            box-sizing: border-box;
+            overflow-x: hidden;
+            position: relative;
+        }
 
-      function resize() {
-        renderer.setSize(window.innerWidth, window.innerHeight);
-        program.uniforms.uResolution.value = new Float32Array([gl.canvas.width, gl.canvas.height, gl.canvas.width / gl.canvas.height]);
-      }
-      window.addEventListener('resize', resize);
-      resize();
+        .moon-surface-bg {
+            position: fixed;
+            top: 0;
+            left: 0;
+            width: 100%;
+            height: 100%;
+            background-image: url('https://upload.wikimedia.org/wikipedia/commons/e/e0/FullMoon2010.jpg'); 
+            background-size: cover;
+            background-position: center bottom; 
+            z-index: -3; 
+        }
 
-      requestAnimationFrame(function update(t) {
-        requestAnimationFrame(update);
-        program.uniforms.uTime.value = t * 0.001 * 0.5;
-        renderer.render({ scene: mesh });
-      });
-    });
-  </script>
+        .starfield-bg {
+            position: fixed;
+            top: 0;
+            left: 0;
+            width: 100%;
+            height: 100%;
+            background-image: 
+                radial-gradient(1px 1px at 10% 50%, #fff, transparent), radial-gradient(1px 1px at 90% 10%, #fff, transparent), radial-gradient(1px 1px at 30% 80%, #fff, transparent), radial-gradient(1px 1px at 70% 30%, #fff, transparent), radial-gradient(2px 2px at 5% 5%, #fff, transparent), radial-gradient(2px 2px at 85% 95%, #fff, transparent), radial-gradient(2px 2px at 20% 70%, #fff, transparent), radial-gradient(2px 2px at 60% 40%, #fff, transparent);
+            background-size: 1000px 1000px; 
+            background-repeat: repeat;
+            z-index: -2; 
+        }
+        
+        .shooting-star {
+            position: fixed;
+            top: 0;
+            left: 0;
+            width: 8px; 
+            height: 8px; 
+            border-radius: 50%;
+            box-shadow: 0 0 15px #fff, 0 0 25px rgba(255, 255, 255, 0.7); 
+            animation: shooting-star 5s linear infinite; 
+            z-index: 9999; 
+            pointer-events: none;
+            opacity: 0;
+            transform-origin: center center; 
+            background: #fff; 
+        }
+
+        /* Tracer Tail: Fixed to follow the diagonal path */
+        .shooting-star::before {
+            content: '';
+            position: absolute;
+            left: -75px; /* Half the size of the previous tracer */
+            top: 0;
+            width: 75px; /* Half the size of the previous tracer */
+            height: 8px; 
+            background: linear-gradient(to right, rgba(255, 255, 255, 0), rgba(255, 255, 255, 0.8) 50%, #fff 100%);
+            /* REMOVED rotation. The star's main animation handles the 45deg rotation. */
+            transform: translate(0, 0); 
+            transform-origin: 100% 50%;
+            z-index: -1; 
+            opacity: 1;
+        }
+
+        .grid-overlay {
+            position: fixed;
+            top: 0;
+            left: 0;
+            width: 100%;
+            height: 100%;
+            background: 
+                linear-gradient(to right, transparent 1px, rgba(255, 255, 0, 0.05) 1px, rgba(255, 255, 0, 0.05) 2px, transparent 2px),
+                linear-gradient(to bottom, transparent 1px, rgba(255, 255, 0, 0.05) 1px, rgba(255, 255, 0, 0.05) 2px, transparent 2px);
+            background-size: 50px 50px, 50px 50px;
+            pointer-events: none;
+            z-index: 99;
+            opacity: 0.3;
+        }
+
+        #screen-wrapper {
+            width: 100%;
+            max-width: 1000px;
+            z-index: 10;
+            transform-style: preserve-3d;
+            transition: transform 0.08s ease-out;
+            will-change: transform;
+            position: relative;
+            transform: rotateX(0.1deg) rotateY(0.1deg);
+            
+            animation: screen-jitter 0.5s infinite alternate;
+
+            background-color: rgba(0, 0, 0, 0.4); 
+            border-radius: 8px;
+            border: 1px solid rgba(0, 0, 0, 0.1); 
+            box-shadow: 0 0 5px rgba(0, 0, 0, 0.1); 
+        }
+        
+        #screen-wrapper::before {
+            content: "";
+            position: absolute;
+            top: 0; left: 0; right: 0; bottom: 0;
+            background: repeating-linear-gradient(
+                transparent, transparent 1px, 
+                rgba(255, 215, 0, 0.02) 2px, rgba(255, 215, 0, 0.02) 3px
+            );
+            pointer-events: none;
+            z-index: 20;
+            opacity: 0.5;
+        }
+        
+        .image-box {
+            background-color: rgba(13, 18, 23, 0.9); 
+            border-radius: 4px;
+            border: 1px solid rgba(255, 215, 0, 0.4); 
+            
+            animation: neon-pulse 3s ease-in-out infinite; 
+            
+            margin-bottom: 50px; 
+            overflow: hidden;
+            position: relative;
+            transition: box-shadow 0.3s ease-in-out, transform 0.3s ease, border-color 0.3s ease;
+        }
+
+        .image-box:hover {
+            box-shadow: 
+                0 0 30px #ffff00, 
+                0 0 60px rgba(255, 215, 0, 0.8), 0 0 90px rgba(255, 215, 0, 0.6);
+            animation: none; 
+            transform: translateY(-3px) scale(1.005); 
+            border-color: #ffff00; 
+        }
+        
+        .image-box::before {
+            content: '';
+            position: absolute;
+            top: 0;
+            left: 0;
+            width: 100%;
+            height: 100%;
+            background: linear-gradient(to right, rgba(255, 215, 0, 0), rgba(255, 215, 0, 0.4), rgba(255, 215, 0, 0));
+            transform-origin: left;
+            transform: scaleX(0);
+            opacity: 0;
+            pointer-events: none;
+            z-index: 1;
+        }
+
+        .image-box:hover::before {
+            animation: trail-glow 1s ease-out forwards;
+        }
+
+        .image-box:hover .screenshot-image {
+            filter: contrast(1.1) brightness(1.1); 
+            transform: scale(1.008);
+            transition: 0.1s;
+            animation: glitch 0.5s steps(10) infinite; 
+        }
+
+        .screenshot-image {
+            width: 100%;
+            height: auto;
+            display: block;
+            transition: 0.4s;
+            opacity: 0.98; 
+            border-radius: 4px; 
+        }
+
+        #loading-text {
+            font-size: 1.6em; 
+            font-weight: bold;
+            color: #39ff14; 
+            padding: 20px 40px;
+            text-align: center;
+            border: 3px solid #39ff14;
+            background-color: #011503;
+            box-shadow: 0 0 25px #39ff14, inset 0 0 25px #39ff14;
+            width: fit-content;
+            margin: 40px auto;
+            transition: 0.3s;
+            z-index: 25; 
+            position: sticky;
+            top: 20px;
+            transform: translateZ(50px);
+            animation: none;
+        }
+
+        #loading-text::after {
+            content: '_';
+            animation: cursor-blink 1s steps(1) infinite;
+            color: #39ff14;
+            display: inline-block;
+            margin-left: 8px;
+        }
+    </style>
 </head>
+<body>
 
-<body class="text-gray-100 p-6 sm:p-12">
-  <header class="text-center mb-12">
-    <h1 class="text-5xl sm:text-6xl font-extrabold tracking-tight text-purple-400 mb-3">
-      The Hacuasation Hall of Fame
-    </h1>
-    <p class="text-lg text-gray-300">Every glorious hacuasation and achievement, preserved forever.</p>
-  </header>
+    
+    <div class="moon-surface-bg"></div>
+    <div class="starfield-bg"></div>
+    <div class="grid-overlay"></div> 
+    <div class="shooting-star" id="shooting-star-template"></div>
 
-  <main class="max-w-7xl mx-auto">
-    <div id="loading" class="flex flex-col items-center justify-center py-24 text-center">
-      <svg class="animate-spin h-10 w-10 border-4 border-t-purple-400 rounded-full mb-4"></svg>
-      <p class="text-gray-400 text-xl">Loading images...</p>
+    <div id="screen-wrapper">
+        <div class="list-container" id="list-container">
+            <p id="loading-text">C:\\> INITIATING LUNAR OPS INTERFACE...</p>
+        </div>
     </div>
 
-    <div id="gallery" class="gallery-grid hidden"></div>
-  </main>
+    <script>
+        const GITHUB_USERNAME = "KAYAZzz";
+        const REPO_NAME = "reschhachuasations";
+        const FOLDER_PATH = "Screenshots";
+        const BRANCH_NAME = "main";
+        
+        const screenWrapper = document.getElementById('screen-wrapper');
+        const listContainer = document.getElementById('list-container');
+        const loadingText = document.getElementById('loading-text');
 
-  <!-- Fullscreen image modal -->
-  <div id="imageModal">
-    <span class="close-btn" onclick="closeModal()">&times;</span>
-    <img id="modalImg" src="" alt="Fullscreen">
-  </div>
+        function createShootingStar() {
+            const star = document.createElement('div');
+            star.className = 'shooting-star';
+            
+            const startX = Math.random() * 20 - 5; 
+            const startY = Math.random() * 20 - 5; 
+            star.style.left = `${startX}vw`;
+            star.style.top = `${startY}vh`;
 
-  <script>
-    const REPO_OWNER = 'KAYAZzz';
-    const REPO_NAME = 'reschhachuasations';
-    const FOLDER_NAME = 'Screenshots';
-    const MAX_SCREENSHOTS = 50;
+            const duration = 4 + Math.random() * 2; 
+            const delay = Math.random() * 0.5; 
+            star.style.animationDuration = `${duration}s`;
+            star.style.animationDelay = `${delay}s`;
 
-    const buildImageUrl = (filename) =>
-      `https://raw.githubusercontent.com/${REPO_OWNER}/${REPO_NAME}/main/${FOLDER_NAME}/${filename}`;
+            document.body.appendChild(star);
 
-    const IMAGE_FILENAMES = Array.from({ length: MAX_SCREENSHOTS }, (_, i) => `${i + 1}.png`);
-    const gallery = document.getElementById('gallery');
-    const loading = document.getElementById('loading');
-    const modal = document.getElementById('imageModal');
-    const modalImg = document.getElementById('modalImg');
+            star.addEventListener('animationend', () => {
+                star.remove();
+            });
+        }
 
-    const loadImages = () => {
-      let loaded = 0;
-      let success = 0;
+        setInterval(createShootingStar, 5000);
+        createShootingStar(); 
 
-      IMAGE_FILENAMES.forEach((filename) => {
-        const img = new Image();
-        img.src = buildImageUrl(filename);
-        img.alt = filename;
 
-        img.onload = () => {
-          const card = document.createElement('div');
-          card.className = 'gallery-card';
-          card.innerHTML = `
-            <img src="${img.src}" alt="${filename}">
-            <p>${filename}</p>
-          `;
-          card.onclick = () => openModal(img.src);
-          gallery.appendChild(card);
-          success++;
-          if (++loaded === IMAGE_FILENAMES.length) showGallery(success);
-        };
+        async function fetchAndDisplayImages() {
+            const apiUrl = `https://api.github.com/repos/${GITHUB_USERNAME}/${REPO_NAME}/contents/${FOLDER_PATH}?ref=${BRANCH_NAME}`;
+            
+            try {
+                loadingText.textContent = "C:\\> ACCESSING LUNAR DATA NETWORK...";
+                await new Promise(r => setTimeout(r, 800));
+                
+                loadingText.textContent = "C:\\> ESTABLISHING SECURE ORBITAL LINK...";
+                await new Promise(r => setTimeout(r, 600));
 
-        img.onerror = () => {
-          if (++loaded === IMAGE_FILENAMES.length) showGallery(success);
-        };
-      });
-    };
+                const response = await fetch(apiUrl);
+                
+                if (!response.ok) {
+                    throw new Error(`ERROR 404: REPOSITORY NOT FOUND. ABORTING.`);
+                }
+                
+                loadingText.textContent = "C:\\> DECRYPTING VISUAL LOGS...";
+                await new Promise(r => setTimeout(r, 700));
 
-    const showGallery = (success) => {
-      loading.remove();
-      gallery.classList.remove('hidden');
-      if (success === 0) {
-        const msg = document.createElement('p');
-        msg.className = 'text-center text-red-400 text-lg';
-        msg.textContent = 'No images could be loaded. Please check your repository visibility.';
-        gallery.parentNode.appendChild(msg);
-      }
-    };
+                const files = await response.json();
+                
+                loadingText.textContent = "C:\\> RECONSTRUCTING HOLO-PROJECTIONS...";
+                await new Promise(r => setTimeout(r, 600));
+                
+                const imageUrls = files
+                    .filter(file => 
+                        file.type === 'file' && 
+                        /\.(jpe?g|png|gif|webp)$/i.test(file.name)
+                    )
+                    .map(file => file.download_url);
 
-    function openModal(src) {
-      modalImg.src = src;
-      modal.style.display = 'flex';
-    }
+                loadingText.style.display = 'none';
 
-    function closeModal() {
-      modal.style.display = 'none';
-    }
+                if (imageUrls.length > 0) {
+                    imageUrls.forEach(url => {
+                        const box = document.createElement('div');
+                        box.className = 'image-box';
 
-    window.onload = loadImages;
-  </script>
+                        const img = document.createElement('img');
+                        img.className = 'screenshot-image';
+                        img.src = url;
+                        img.alt = 'Repository screenshot';
+
+                        box.appendChild(img);
+                        listContainer.appendChild(box);
+                    });
+                } else {
+                    loadingText.textContent = "C:\\> ERROR: IMAGE DATA CORRUPTED. NO VISUALS.";
+                    loadingText.style.display = 'block';
+                }
+            } catch (error) {
+                console.error("Error fetching images:", error);
+                loadingText.textContent = `C:\\> CRITICAL SYSTEM BREACH: ${error.message}`;
+                loadingText.style.display = 'block';
+            }
+        }
+
+        fetchAndDisplayImages();
+    </script>
+
 </body>
 </html>
