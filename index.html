@@ -1,1 +1,309 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>The Hacuasation Hall of Fame (3D Carousel)</title>
+    <!-- Load Tailwind CSS -->
+    <script src="https://cdn.tailwindcss.com"></script>
+    <style>
+        /* Custom scrollbar for a darker aesthetic */
+        ::-webkit-scrollbar { width: 10px; }
+        ::-webkit-scrollbar-track { background: #110c1f; /* Primary Dark */ }
+        ::-webkit-scrollbar-thumb { background: #6b7280; /* Gray-500 */ border-radius: 5px; }
+        ::-webkit-scrollbar-thumb:hover { background: #8e80a7; }
+        
+        body {
+            font-family: 'Inter', sans-serif;
+            min-height: 100vh;
+        }
 
+        /* --- 3D Carousel Styles --- */
+        #carousel-container {
+            perspective: 1500px; /* Defines the depth of the 3D scene */
+            display: flex;
+            justify-content: center;
+            align-items: center;
+        }
+
+        #gallery {
+            /* The element that holds the entire 3D space */
+            transform-style: preserve-3d;
+            transition: transform 1s cubic-bezier(0.785, 0.135, 0.15, 0.86); /* Smooth rotation transition */
+            position: relative;
+            width: 300px; /* Minimal width for the center of rotation */
+            height: 300px;
+        }
+
+        .carousel-card {
+            position: absolute;
+            top: 0;
+            left: 0;
+            width: 300px; /* Fixed size for 3D transformation */
+            height: 300px;
+            /* Card will be positioned and rotated by JavaScript */
+            overflow: hidden;
+            backface-visibility: hidden; /* Important for preventing weird clipping */
+        }
+
+        /* Custom spinner for loading */
+        .loader {
+            border-top-color: #a78bfa;
+            border-right-color: transparent;
+            border-bottom-color: #a78bfa;
+            border-left-color: transparent;
+        }
+    </style>
+    <script>
+        tailwind.config = {
+            theme: {
+                extend: {
+                    colors: {
+                        'primary-dark': '#110c1f', // Deep Indigo/Purple
+                        'secondary-dark': '#211736', // Slightly lighter shadow
+                        'accent-purple': '#a78bfa', // Vibrant Violet
+                    }
+                }
+            }
+        }
+    </script>
+</head>
+<body class="bg-primary-dark text-gray-100 p-4 sm:p-8">
+
+    <!-- Header Section -->
+    <header class="text-center mb-10">
+        <h1 class="text-5xl sm:text-6xl font-extrabold tracking-tight text-accent-purple mb-2">
+            The Hacuasation Hall of Fame
+        </h1>
+        <p class="text-xl text-gray-400">
+            A gallery of legendary "hacuasations" and top achievements.
+        </p>
+    </header>
+
+    <!-- Navigation Buttons -->
+    <div id="controls" class="flex justify-center space-x-4 mb-8 hidden">
+        <button id="prev" class="px-6 py-3 bg-accent-purple/90 text-white font-bold rounded-xl shadow-lg hover:bg-accent-purple transition duration-300 transform hover:scale-105">
+            <svg xmlns="http://www.w3.org/2000/svg" class="h-6 w-6 inline" fill="none" viewBox="0 0 24 24" stroke="currentColor">
+              <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M15 19l-7-7 7-7" />
+            </svg> Previous
+        </button>
+        <button id="next" class="px-6 py-3 bg-accent-purple/90 text-white font-bold rounded-xl shadow-lg hover:bg-accent-purple transition duration-300 transform hover:scale-105">
+            Next <svg xmlns="http://www.w3.org/2000/svg" class="h-6 w-6 inline" fill="none" viewBox="0 0 24 24" stroke="currentColor">
+              <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M9 5l7 7-7 7" />
+            </svg>
+        </button>
+    </div>
+
+    <!-- Gallery Container (3D Viewport) -->
+    <main id="carousel-container" class="h-[600px] max-w-7xl mx-auto mb-12">
+        <div id="gallery">
+            <div id="loading" class="col-span-full text-center py-40 absolute top-0 left-0 right-0 bottom-0 text-white">
+                <div class="flex flex-col items-center justify-center h-full">
+                    <svg class="loader animate-spin h-10 w-10 border-4 rounded-full inline-block mb-4" viewBox="0 0 24 24"></svg>
+                    <p class="text-xl text-gray-400">Loading images from GitHub...</p>
+                </div>
+            </div>
+        </div>
+    </main>
+
+    <!-- Setup Information Area -->
+    <div id="setup-instructions" class="max-w-4xl mx-auto mt-12 p-6 bg-secondary-dark rounded-xl shadow-2xl border border-gray-700">
+        <h2 class="text-2xl font-bold text-accent-purple mb-4">Setup Information</h2>
+        <p class="text-gray-300">
+            Images are being loaded from: 
+            <code class="bg-gray-700 p-1 rounded text-sm block mt-2 break-all" id="repo-path"></code>
+        </p>
+        <p class="mt-4 text-gray-400 text-sm">
+            <span class="font-bold">Note:</span> The system attempts to load <code>1.png</code>, <code>2.png</code>, up to <code>50.png</code> and automatically hides any that do not exist in your repository.
+        </p>
+    </div>
+
+    <script>
+        // =======================================================
+        // === GITHUB REPO CONFIGURATION (UPDATED FOR USER) ===
+        // =======================================================
+        const REPO_OWNER = 'KAYAZzz'; 
+        const REPO_NAME = 'reschhachuasations'; 
+        const FOLDER_NAME = 'Screenshots';
+        const MAX_SCREENSHOTS = 50; 
+        
+        // Settings for the 3D Carousel
+        const ROTATION_RADIUS = 600; // Radius of the circle in pixels
+        let currentAngle = 0; // Current rotation of the entire carousel
+        let numCards = 0; // Number of successfully loaded cards
+        
+        let IMAGE_FILENAMES = [];
+        for (let i = 1; i <= MAX_SCREENSHOTS; i++) {
+            IMAGE_FILENAMES.push(`\${i}.png`);
+        }
+        // =======================================================
+        
+        const gallery = document.getElementById('gallery');
+        const setupInstructions = document.getElementById('setup-instructions');
+        const repoPath = document.getElementById('repo-path');
+        const loadingDiv = document.getElementById('loading');
+        const controlsDiv = document.getElementById('controls');
+        
+        let successfulCards = [];
+        let touchStartX = 0;
+        let touchEndX = 0;
+        const SWIPE_THRESHOLD = 50; // Minimum distance in pixels for a swipe
+
+        /**
+         * Builds the raw GitHub content URL for a given filename.
+         */
+        const buildImageUrl = (filename) => {
+            return \`https://raw.githubusercontent.com/\${REPO_OWNER}/\${REPO_NAME}/main/\${FOLDER_NAME}/\${filename}\`;
+        };
+
+        /**
+         * Applies the 3D transformations to the successfully loaded cards.
+         */
+        const positionCards = () => {
+            numCards = successfulCards.length;
+            if (numCards === 0) return;
+
+            // Calculate the angle each card needs to be rotated to be on the circle
+            const angleStep = 360 / numCards;
+
+            successfulCards.forEach((card, index) => {
+                const angle = index * angleStep;
+                
+                // Set the 3D transform properties
+                card.style.transform = 
+                    \`rotateY(\${angle}deg) translateZ(\${ROTATION_RADIUS}px)\`;
+                
+                // Add click behavior to jump to the card
+                card.onclick = () => {
+                    rotateCarousel(angle * -1); // Center the clicked card
+                };
+            });
+            
+            controlsDiv.classList.remove('hidden');
+        };
+        
+        /**
+         * Rotates the entire carousel container to the specified angle.
+         */
+        const rotateCarousel = (targetAngle) => {
+            currentAngle = targetAngle;
+            gallery.style.transform = \`translateZ(-\${ROTATION_RADIUS}px) rotateY(\${currentAngle}deg)\`;
+        };
+
+        /**
+         * Initializes the navigation controls.
+         */
+        const initControls = () => {
+            const angleStep = 360 / numCards;
+            
+            document.getElementById('next').onclick = () => {
+                rotateCarousel(currentAngle - angleStep);
+            };
+
+            document.getElementById('prev').onclick = () => {
+                rotateCarousel(currentAngle + angleStep);
+            };
+            
+            // Initial positioning
+            rotateCarousel(0);
+        };
+        
+        /**
+         * Initializes touch/swipe controls for mobile.
+         */
+        const initTouchControls = () => {
+            const container = document.getElementById('carousel-container');
+            const angleStep = 360 / numCards;
+
+            container.addEventListener('touchstart', (e) => {
+                touchStartX = e.touches[0].clientX;
+            }, false);
+
+            container.addEventListener('touchend', (e) => {
+                touchEndX = e.changedTouches[0].clientX;
+                const diff = touchStartX - touchEndX;
+
+                if (Math.abs(diff) > SWIPE_THRESHOLD) {
+                    if (diff > 0) {
+                        // Swiped left (Next image)
+                        rotateCarousel(currentAngle - angleStep);
+                    } else {
+                        // Swiped right (Previous image)
+                        rotateCarousel(currentAngle + angleStep);
+                    }
+                }
+            }, false);
+        };
+
+
+        /**
+         * Generates the gallery content by attempting to load sequential images.
+         */
+        const generateGallery = () => {
+            // Update the instructions panel
+            repoPath.textContent = buildImageUrl('').replace(/(\/Screenshots\/)$/, '/');
+
+            let attemptsCompleted = 0;
+            let totalImagesAttempted = IMAGE_FILENAMES.length;
+            
+            IMAGE_FILENAMES.forEach((filename) => {
+                const imageUrl = buildImageUrl(filename);
+                
+                const card = document.createElement('div');
+                card.className = 'carousel-card bg-secondary-dark rounded-xl shadow-lg hover:shadow-accent-purple/50 transition duration-300 overflow-hidden transform hover:scale-105 cursor-pointer';
+                card.dataset.filename = filename;
+                
+                const img = document.createElement('img');
+                img.src = imageUrl;
+                img.alt = \`Achievement: \${filename}\`;
+                img.className = 'w-full h-4/5 object-cover object-center rounded-t-xl transition duration-300';
+                img.loading = 'lazy'; 
+                
+                const footer = document.createElement('div');
+                footer.className = 'p-3 border-t border-gray-700 bg-secondary-dark h-1/5 flex items-center justify-center';
+                footer.innerHTML = \`<p class="text-sm font-medium text-gray-300 truncate">\${filename}</p>\`;
+
+                card.appendChild(img);
+                card.appendChild(footer);
+                
+                // --- Event Handlers for Success/Failure ---
+                img.onload = function() {
+                    attemptsCompleted++;
+                    // Add card to the list of successful cards
+                    successfulCards.push(card);
+                    // Append the card element to the 3D container
+                    gallery.appendChild(card);
+                    
+                    if (attemptsCompleted === totalImagesAttempted) {
+                         // All attempts complete, finalize the display
+                         loadingDiv.remove();
+                         positionCards();
+                         initControls();
+                         initTouchControls(); // Initialize mobile swipe controls
+                    }
+                }
+                
+                img.onerror = function() {
+                    attemptsCompleted++;
+                    // This card failed to load, it won't be in successfulCards array.
+                    // Check if we are done with all attempts.
+                    if (attemptsCompleted === totalImagesAttempted) {
+                        loadingDiv.remove();
+                        positionCards();
+                        initControls();
+                        initTouchControls(); // Initialize mobile swipe controls
+                        
+                        // Check for complete failure
+                        if (successfulCards.length === 0) {
+                             gallery.innerHTML = '<p class="text-center text-xl text-red-500 col-span-full">No images could be loaded. Please verify your repository is public and the file names are correct.</p>';
+                        }
+                    }
+                }
+            });
+        };
+
+        // Run the function when the page loads
+        window.onload = generateGallery;
+    </script>
+</body>
+</html>
