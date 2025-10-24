@@ -97,6 +97,14 @@
     <!-- Gallery Container (3D Viewport) -->
     <main id="carousel-container" class="h-[600px] max-w-7xl mx-auto mb-12">
         <div id="gallery">
+            
+            <!-- DEBUG CARD - Always the first card (Index 0) -->
+            <div id="debug-card" class="carousel-card bg-secondary-dark rounded-xl shadow-lg border-4 border-accent-purple/50 p-6 flex flex-col justify-center items-center text-center">
+                <h2 class="text-xl font-bold text-accent-purple mb-3">🛠️ Image Path Check</h2>
+                <p class="text-sm text-gray-300 mb-2">The carousel is trying to load images from the path below. **Copy this link** and paste it into a new tab to confirm your GitHub repo is public and the file names are correct (e.g., replace '1.png' with '2.png', etc.).</p>
+                <code class="bg-gray-700/50 p-2 rounded text-xs text-green-300 break-all w-full mt-2" id="live-repo-path">LOADING...</code>
+            </div>
+
             <div id="loading" class="col-span-full text-center py-40 absolute top-0 left-0 right-0 bottom-0 text-white">
                 <div class="flex flex-col items-center justify-center h-full">
                     <svg class="loader animate-spin h-10 w-10 border-4 rounded-full inline-block mb-4" viewBox="0 0 24 24"></svg>
@@ -106,11 +114,11 @@
         </div>
     </main>
 
-    <!-- Setup Information Area -->
+    <!-- Setup Information Area (Footer Note) -->
     <div id="setup-instructions" class="max-w-4xl mx-auto mt-12 p-6 bg-secondary-dark rounded-xl shadow-2xl border border-gray-700">
         <h2 class="text-2xl font-bold text-accent-purple mb-4">Setup Information</h2>
         <p class="text-gray-300">
-            Images are being loaded from: 
+            The script is configured for:
             <code class="bg-gray-700 p-1 rounded text-sm block mt-2 break-all" id="repo-path"></code>
         </p>
         <p class="mt-4 text-gray-400 text-sm">
@@ -127,8 +135,8 @@
         const FOLDER_NAME = 'Screenshots';
         const MAX_SCREENSHOTS = 50; 
         
-        // Settings for the 3D Carousel
-        const ROTATION_RADIUS = 600; // Radius of the circle in pixels
+        // Settings for the 3D Carousel (Reduced radius for better mobile visibility)
+        const ROTATION_RADIUS = 300; 
         let currentAngle = 0; // Current rotation of the entire carousel
         let numCards = 0; // Number of successfully loaded cards
         
@@ -139,7 +147,6 @@
         // =======================================================
         
         const gallery = document.getElementById('gallery');
-        const setupInstructions = document.getElementById('setup-instructions');
         const repoPath = document.getElementById('repo-path');
         const loadingDiv = document.getElementById('loading');
         const controlsDiv = document.getElementById('controls');
@@ -161,7 +168,11 @@
          */
         const positionCards = () => {
             numCards = successfulCards.length;
-            if (numCards === 0) return;
+            if (numCards === 0) {
+                 // If only the debug card exists, don't show controls
+                 controlsDiv.classList.add('hidden');
+                 return;
+            }
 
             // Calculate the angle each card needs to be rotated to be on the circle
             const angleStep = 360 / numCards;
@@ -173,10 +184,12 @@
                 card.style.transform = 
                     \`rotateY(\${angle}deg) translateZ(\${ROTATION_RADIUS}px)\`;
                 
-                // Add click behavior to jump to the card
-                card.onclick = () => {
-                    rotateCarousel(angle * -1); // Center the clicked card
-                };
+                // Add click behavior to jump to the card (skip click behavior for the debug card)
+                if (card.id !== 'debug-card') {
+                    card.onclick = () => {
+                        rotateCarousel(angle * -1); // Center the clicked card
+                    };
+                }
             });
             
             controlsDiv.classList.remove('hidden');
@@ -240,8 +253,15 @@
          * Generates the gallery content by attempting to load sequential images.
          */
         const generateGallery = () => {
-            // Update the instructions panel
-            repoPath.textContent = buildImageUrl('').replace(/(\/Screenshots\/)$/, '/');
+            // Update the instructions panel and the live debug card
+            const exampleFilename = '1.png';
+            const baseRawPath = buildImageUrl('');
+            repoPath.textContent = baseRawPath.replace(/\/$/, '');
+            document.getElementById('live-repo-path').textContent = buildImageUrl(exampleFilename);
+
+            // Add the static debug card first
+            const debugCard = document.getElementById('debug-card');
+            successfulCards.push(debugCard); 
 
             let attemptsCompleted = 0;
             let totalImagesAttempted = IMAGE_FILENAMES.length;
@@ -269,9 +289,8 @@
                 // --- Event Handlers for Success/Failure ---
                 img.onload = function() {
                     attemptsCompleted++;
-                    // Add card to the list of successful cards
+                    // Add card to the list of successful cards and append to gallery
                     successfulCards.push(card);
-                    // Append the card element to the 3D container
                     gallery.appendChild(card);
                     
                     if (attemptsCompleted === totalImagesAttempted) {
@@ -279,23 +298,25 @@
                          loadingDiv.remove();
                          positionCards();
                          initControls();
-                         initTouchControls(); // Initialize mobile swipe controls
+                         initTouchControls();
                     }
                 }
                 
                 img.onerror = function() {
                     attemptsCompleted++;
-                    // This card failed to load, it won't be in successfulCards array.
-                    // Check if we are done with all attempts.
+                    console.error(\`Failed to load image: \${imageUrl}\`);
+                    
                     if (attemptsCompleted === totalImagesAttempted) {
                         loadingDiv.remove();
                         positionCards();
                         initControls();
-                        initTouchControls(); // Initialize mobile swipe controls
+                        initTouchControls(); 
                         
-                        // Check for complete failure
-                        if (successfulCards.length === 0) {
-                             gallery.innerHTML = '<p class="text-center text-xl text-red-500 col-span-full">No images could be loaded. Please verify your repository is public and the file names are correct.</p>';
+                        // Check if only the debug card loaded
+                        if (successfulCards.length === 1) { 
+                             console.error('Only the debug card loaded. Check paths.');
+                             debugCard.querySelector('p:nth-of-type(2)').classList.add('text-red-400');
+                             debugCard.querySelector('p:nth-of-type(2)').innerHTML = 'No images loaded. **ACTION REQUIRED:** Check the URL above to ensure your repo is public.';
                         }
                     }
                 }
