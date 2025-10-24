@@ -80,7 +80,7 @@
             height: 100%;
             background-image: 
                 radial-gradient(1px 1px at 10% 50%, #fff, transparent), radial-gradient(1px 1px at 90% 10%, #fff, transparent), radial-gradient(1px 1px at 30% 80%, #fff, transparent), radial-gradient(1px 1px at 70% 30%, #fff, transparent), radial-gradient(2px 2px at 5% 5%, #fff, transparent), radial-gradient(2px 2px at 85% 95%, #fff, transparent), radial-gradient(2px 2px at 20% 70%, #fff, transparent), radial-gradient(2px 2px at 60% 40%, #fff, transparent);
-            background-size: 1000px 1000px; 
+            background-size: 816px 816px; 
             background-repeat: repeat;
             z-index: -2; 
         }
@@ -93,7 +93,7 @@
             height: 8px; 
             border-radius: 50%;
             box-shadow: 0 0 15px #fff, 0 0 25px rgba(255, 255, 255, 0.7); 
-            animation: shooting-star 5s linear infinite; 
+            animation: shooting-star 4.8s linear forwards; /* Fixed duration < 5s to prevent overlap */
             z-index: 9999; 
             pointer-events: none;
             opacity: 0;
@@ -101,16 +101,14 @@
             background: #fff; 
         }
 
-        /* Tracer Tail: Fixed to follow the diagonal path */
         .shooting-star::before {
             content: '';
             position: absolute;
-            left: -75px; /* Half the size of the previous tracer */
+            left: -75px; 
             top: 0;
-            width: 75px; /* Half the size of the previous tracer */
+            width: 75px; 
             height: 8px; 
             background: linear-gradient(to right, rgba(255, 255, 255, 0), rgba(255, 255, 255, 0.8) 50%, #fff 100%);
-            /* REMOVED rotation. The star's main animation handles the 45deg rotation. */
             transform: translate(0, 0); 
             transform-origin: 100% 50%;
             z-index: -1; 
@@ -174,6 +172,8 @@
             overflow: hidden;
             position: relative;
             transition: box-shadow 0.3s ease-in-out, transform 0.3s ease, border-color 0.3s ease;
+            
+            padding: 5px; 
         }
 
         .image-box:hover {
@@ -272,29 +272,35 @@
         const listContainer = document.getElementById('list-container');
         const loadingText = document.getElementById('loading-text');
 
-        function createShootingStar() {
+        // Function to create and manage the single shooting star cycle
+        function startShootingStarCycle() {
+            // Star travel time is fixed in CSS to 4.8s.
+            const STAR_ANIMATION_DURATION = 4800; 
+            const NEXT_STAR_DELAY = 5000; // Launch next star exactly 5 seconds later
+            
             const star = document.createElement('div');
             star.className = 'shooting-star';
             
+            // Random start position
             const startX = Math.random() * 20 - 5; 
             const startY = Math.random() * 20 - 5; 
             star.style.left = `${startX}vw`;
             star.style.top = `${startY}vh`;
+            
+            // Star removal is now done after its fixed animation duration
+            setTimeout(() => {
+                star.remove();
+            }, STAR_ANIMATION_DURATION);
 
-            const duration = 4 + Math.random() * 2; 
-            const delay = Math.random() * 0.5; 
-            star.style.animationDuration = `${duration}s`;
-            star.style.animationDelay = `${delay}s`;
 
             document.body.appendChild(star);
 
-            star.addEventListener('animationend', () => {
-                star.remove();
-            });
+            // Set a timeout to start the NEXT star after the required 5 second interval
+            setTimeout(startShootingStarCycle, NEXT_STAR_DELAY);
         }
-
-        setInterval(createShootingStar, 5000);
-        createShootingStar(); 
+        
+        // Start the continuous cycle
+        startShootingStarCycle(); 
 
 
         async function fetchAndDisplayImages() {
