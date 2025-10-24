@@ -7,10 +7,9 @@
     <!-- Load Tailwind CSS -->
     <script src="https://cdn.tailwindcss.com"></script>
     <style>
-        /* Custom scrollbar for a darker aesthetic */
         ::-webkit-scrollbar { width: 10px; }
-        ::-webkit-scrollbar-track { background: #110c1f; /* Primary Dark */ }
-        ::-webkit-scrollbar-thumb { background: #6b7280; /* Gray-500 */ border-radius: 5px; }
+        ::-webkit-scrollbar-track { background: #110c1f; }
+        ::-webkit-scrollbar-thumb { background: #6b7280; border-radius: 5px; }
         ::-webkit-scrollbar-thumb:hover { background: #8e80a7; }
         
         body {
@@ -18,20 +17,18 @@
             min-height: 100vh;
         }
 
-        /* --- 3D Carousel Styles --- */
         #carousel-container {
-            perspective: 1500px; /* Defines the depth of the 3D scene */
+            perspective: 1500px;
             display: flex;
             justify-content: center;
             align-items: center;
         }
 
         #gallery {
-            /* The element that holds the entire 3D space */
             transform-style: preserve-3d;
-            transition: transform 1s cubic-bezier(0.785, 0.135, 0.15, 0.86); /* Smooth rotation transition */
+            transition: transform 1s cubic-bezier(0.785, 0.135, 0.15, 0.86);
             position: relative;
-            width: 300px; /* Minimal width for the center of rotation */
+            width: 300px;
             height: 300px;
         }
 
@@ -39,14 +36,12 @@
             position: absolute;
             top: 0;
             left: 0;
-            width: 300px; /* Fixed size for 3D transformation */
+            width: 300px;
             height: 300px;
-            /* Card will be positioned and rotated by JavaScript */
             overflow: hidden;
-            backface-visibility: hidden; /* Important for preventing weird clipping */
+            backface-visibility: hidden;
         }
 
-        /* Custom spinner for loading */
         .loader {
             border-top-color: #a78bfa;
             border-right-color: transparent;
@@ -59,9 +54,9 @@
             theme: {
                 extend: {
                     colors: {
-                        'primary-dark': '#110c1f', // Deep Indigo/Purple
-                        'secondary-dark': '#211736', // Slightly lighter shadow
-                        'accent-purple': '#a78bfa', // Vibrant Violet
+                        'primary-dark': '#110c1f',
+                        'secondary-dark': '#211736',
+                        'accent-purple': '#a78bfa',
                     }
                 }
             }
@@ -94,15 +89,16 @@
         </button>
     </div>
 
-    <!-- Gallery Container (3D Viewport) -->
+    <!-- Gallery Container -->
     <main id="carousel-container" class="h-[600px] max-w-7xl mx-auto mb-12">
         <div id="gallery">
             
-            <!-- DEBUG CARD - Always the first card (Index 0) -->
+            <!-- Debug Card -->
             <div id="debug-card" class="carousel-card bg-secondary-dark rounded-xl shadow-lg border-4 border-accent-purple/50 p-6 flex flex-col justify-center items-center text-center">
-                <h2 class="text-xl font-bold text-accent-purple mb-3">🛠️ Image Path Check</h2>
-                <p class="text-sm text-gray-300 mb-2">The carousel is trying to load images from the path below. **Copy this link** and paste it into a new tab to confirm your GitHub repo is public and the file names are correct (e.g., replace '1.png' with '2.png', etc.).</p>
-                <code class="bg-gray-700/50 p-2 rounded text-xs text-green-300 break-all w-full mt-2" id="live-repo-path">LOADING...</code>
+                <h2 class="text-xl font-bold text-accent-purple mb-3">🛠️ Image Path Check (Raw GitHub)</h2>
+                <p class="text-sm text-gray-300 mb-2">Click the link to verify your image loads directly.</p>
+                <a href="#" id="live-repo-path-link" target="_blank" class="bg-gray-700/50 p-2 rounded text-xs text-green-300 break-all w-full mt-2 hover:bg-gray-600 transition block">LOADING...</a>
+                <p id="load-status" class="mt-4 text-sm font-semibold text-gray-400"></p>
             </div>
 
             <div id="loading" class="col-span-full text-center py-40 absolute top-0 left-0 right-0 bottom-0 text-white">
@@ -114,216 +110,156 @@
         </div>
     </main>
 
-    <!-- Setup Information Area (Footer Note) -->
+    <!-- Footer Info -->
     <div id="setup-instructions" class="max-w-4xl mx-auto mt-12 p-6 bg-secondary-dark rounded-xl shadow-2xl border border-gray-700">
-        <h2 class="text-2xl font-bold text-accent-purple mb-4">Setup Information</h2>
+        <h2 class="2xl font-bold text-accent-purple mb-4">Setup Information</h2>
         <p class="text-gray-300">
             The script is configured for:
             <code class="bg-gray-700 p-1 rounded text-sm block mt-2 break-all" id="repo-path"></code>
         </p>
         <p class="mt-4 text-gray-400 text-sm">
-            <span class="font-bold">Note:</span> The system attempts to load <code>1.png</code>, <code>2.png</code>, up to <code>50.png</code> and automatically hides any that do not exist in your repository.
+            <span class="font-bold">Note:</span> Images load directly from the <code>raw.githubusercontent.com</code> CDN.
         </p>
     </div>
 
     <script>
         // =======================================================
-        // === GITHUB REPO CONFIGURATION (UPDATED FOR USER) ===
+        // === FIXED GITHUB IMAGE LOADING SECTION ===
         // =======================================================
-        const REPO_OWNER = 'KAYAZzz'; 
-        const REPO_NAME = 'reschhachuasations'; 
+        const REPO_OWNER = 'KAYAZzz';
+        const REPO_NAME = 'reschhachuasations';
         const FOLDER_NAME = 'Screenshots';
-        const MAX_SCREENSHOTS = 50; 
+        const MAX_SCREENSHOTS = 50;
         
-        // Settings for the 3D Carousel (Reduced radius for better mobile visibility)
-        const ROTATION_RADIUS = 300; 
-        let currentAngle = 0; // Current rotation of the entire carousel
-        let numCards = 0; // Number of successfully loaded cards
-        
+        const ROTATION_RADIUS = 300;
+        let currentAngle = 0;
+        let numCards = 0;
+
         let IMAGE_FILENAMES = [];
         for (let i = 1; i <= MAX_SCREENSHOTS; i++) {
-            IMAGE_FILENAMES.push(`\${i}.png`);
+            IMAGE_FILENAMES.push(`${i}.png`);
         }
-        // =======================================================
-        
+
+        const buildImageUrl = (filename) => {
+            return `https://raw.githubusercontent.com/${REPO_OWNER}/${REPO_NAME}/main/${FOLDER_NAME}/${filename}`;
+        };
+
         const gallery = document.getElementById('gallery');
         const repoPath = document.getElementById('repo-path');
         const loadingDiv = document.getElementById('loading');
         const controlsDiv = document.getElementById('controls');
+        const debugCard = document.getElementById('debug-card');
+        const loadStatus = document.getElementById('load-status');
         
         let successfulCards = [];
         let touchStartX = 0;
         let touchEndX = 0;
-        const SWIPE_THRESHOLD = 50; // Minimum distance in pixels for a swipe
+        const SWIPE_THRESHOLD = 50;
 
-        /**
-         * Builds the raw GitHub content URL for a given filename.
-         */
-        const buildImageUrl = (filename) => {
-            return \`https://raw.githubusercontent.com/\${REPO_OWNER}/\${REPO_NAME}/main/\${FOLDER_NAME}/\${filename}\`;
-        };
-
-        /**
-         * Applies the 3D transformations to the successfully loaded cards.
-         */
         const positionCards = () => {
             numCards = successfulCards.length;
             if (numCards === 0) {
-                 // If only the debug card exists, don't show controls
                  controlsDiv.classList.add('hidden');
                  return;
             }
-
-            // Calculate the angle each card needs to be rotated to be on the circle
             const angleStep = 360 / numCards;
-
             successfulCards.forEach((card, index) => {
                 const angle = index * angleStep;
-                
-                // Set the 3D transform properties
-                card.style.transform = 
-                    \`rotateY(\${angle}deg) translateZ(\${ROTATION_RADIUS}px)\`;
-                
-                // Add click behavior to jump to the card (skip click behavior for the debug card)
+                card.style.transform = `rotateY(${angle}deg) translateZ(${ROTATION_RADIUS}px)`;
                 if (card.id !== 'debug-card') {
-                    card.onclick = () => {
-                        rotateCarousel(angle * -1); // Center the clicked card
-                    };
+                    card.onclick = () => rotateCarousel(angle * -1);
                 }
             });
-            
             controlsDiv.classList.remove('hidden');
         };
-        
-        /**
-         * Rotates the entire carousel container to the specified angle.
-         */
+
         const rotateCarousel = (targetAngle) => {
             currentAngle = targetAngle;
-            gallery.style.transform = \`translateZ(-\${ROTATION_RADIUS}px) rotateY(\${currentAngle}deg)\`;
+            gallery.style.transform = `translateZ(-${ROTATION_RADIUS}px) rotateY(${currentAngle}deg)`;
         };
 
-        /**
-         * Initializes the navigation controls.
-         */
         const initControls = () => {
             const angleStep = 360 / numCards;
-            
-            document.getElementById('next').onclick = () => {
-                rotateCarousel(currentAngle - angleStep);
-            };
-
-            document.getElementById('prev').onclick = () => {
-                rotateCarousel(currentAngle + angleStep);
-            };
-            
-            // Initial positioning
+            document.getElementById('next').onclick = () => rotateCarousel(currentAngle - angleStep);
+            document.getElementById('prev').onclick = () => rotateCarousel(currentAngle + angleStep);
             rotateCarousel(0);
         };
-        
-        /**
-         * Initializes touch/swipe controls for mobile.
-         */
+
         const initTouchControls = () => {
             const container = document.getElementById('carousel-container');
             const angleStep = 360 / numCards;
-
-            container.addEventListener('touchstart', (e) => {
-                touchStartX = e.touches[0].clientX;
-            }, false);
-
+            container.addEventListener('touchstart', (e) => touchStartX = e.touches[0].clientX, false);
             container.addEventListener('touchend', (e) => {
                 touchEndX = e.changedTouches[0].clientX;
                 const diff = touchStartX - touchEndX;
-
                 if (Math.abs(diff) > SWIPE_THRESHOLD) {
-                    if (diff > 0) {
-                        // Swiped left (Next image)
-                        rotateCarousel(currentAngle - angleStep);
-                    } else {
-                        // Swiped right (Previous image)
-                        rotateCarousel(currentAngle + angleStep);
-                    }
+                    rotateCarousel(currentAngle + (diff > 0 ? -angleStep : angleStep));
                 }
             }, false);
         };
 
-
-        /**
-         * Generates the gallery content by attempting to load sequential images.
-         */
         const generateGallery = () => {
-            // Update the instructions panel and the live debug card
             const exampleFilename = '1.png';
             const baseRawPath = buildImageUrl('');
             repoPath.textContent = baseRawPath.replace(/\/$/, '');
-            document.getElementById('live-repo-path').textContent = buildImageUrl(exampleFilename);
+            const livePathLink = document.getElementById('live-repo-path-link');
+            livePathLink.textContent = buildImageUrl(exampleFilename);
+            livePathLink.href = buildImageUrl(exampleFilename);
 
-            // Add the static debug card first
-            const debugCard = document.getElementById('debug-card');
-            successfulCards.push(debugCard); 
+            successfulCards.push(debugCard);
 
             let attemptsCompleted = 0;
-            let totalImagesAttempted = IMAGE_FILENAMES.length;
-            
+            const totalImages = IMAGE_FILENAMES.length;
+
             IMAGE_FILENAMES.forEach((filename) => {
                 const imageUrl = buildImageUrl(filename);
-                
                 const card = document.createElement('div');
                 card.className = 'carousel-card bg-secondary-dark rounded-xl shadow-lg hover:shadow-accent-purple/50 transition duration-300 overflow-hidden transform hover:scale-105 cursor-pointer';
                 card.dataset.filename = filename;
-                
+
                 const img = document.createElement('img');
                 img.src = imageUrl;
-                img.alt = \`Achievement: \${filename}\`;
+                img.alt = `Achievement: ${filename}`;
                 img.className = 'w-full h-4/5 object-cover object-center rounded-t-xl transition duration-300';
-                img.loading = 'lazy'; 
-                
+                img.loading = 'lazy';
+
                 const footer = document.createElement('div');
                 footer.className = 'p-3 border-t border-gray-700 bg-secondary-dark h-1/5 flex items-center justify-center';
-                footer.innerHTML = \`<p class="text-sm font-medium text-gray-300 truncate">\${filename}</p>\`;
+                footer.innerHTML = `<p class="text-sm font-medium text-gray-300 truncate">${filename}</p>`;
 
                 card.appendChild(img);
                 card.appendChild(footer);
-                
-                // --- Event Handlers for Success/Failure ---
+
                 img.onload = function() {
                     attemptsCompleted++;
-                    // Add card to the list of successful cards and append to gallery
                     successfulCards.push(card);
                     gallery.appendChild(card);
-                    
-                    if (attemptsCompleted === totalImagesAttempted) {
-                         // All attempts complete, finalize the display
+                    if (attemptsCompleted === totalImages) {
                          loadingDiv.remove();
                          positionCards();
                          initControls();
                          initTouchControls();
+                         loadStatus.textContent = successfulCards.length > 1 ? `Successfully loaded ${successfulCards.length - 1} image(s).` : '';
                     }
-                }
-                
+                };
+
                 img.onerror = function() {
                     attemptsCompleted++;
-                    console.error(\`Failed to load image: \${imageUrl}\`);
-                    
-                    if (attemptsCompleted === totalImagesAttempted) {
+                    console.warn(`Failed to load image: ${imageUrl}`);
+                    if (attemptsCompleted === totalImages) {
                         loadingDiv.remove();
                         positionCards();
                         initControls();
-                        initTouchControls(); 
-                        
-                        // Check if only the debug card loaded
-                        if (successfulCards.length === 1) { 
-                             console.error('Only the debug card loaded. Check paths.');
-                             debugCard.querySelector('p:nth-of-type(2)').classList.add('text-red-400');
-                             debugCard.querySelector('p:nth-of-type(2)').innerHTML = 'No images loaded. **ACTION REQUIRED:** Check the URL above to ensure your repo is public.';
+                        initTouchControls();
+                        if (successfulCards.length === 1) {
+                             loadStatus.textContent = 'No images loaded. Check repo visibility!';
+                             loadStatus.classList.add('text-red-400');
                         }
                     }
-                }
+                };
             });
         };
 
-        // Run the function when the page loads
         window.onload = generateGallery;
     </script>
 </body>
