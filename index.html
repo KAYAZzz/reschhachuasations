@@ -1,266 +1,231 @@
 <!DOCTYPE html>
 <html lang="en">
 <head>
-    <meta charset="UTF-8">
-    <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>The Hacuasation Hall of Fame (3D Carousel)</title>
-    <!-- Load Tailwind CSS -->
-    <script src="https://cdn.tailwindcss.com"></script>
-    <style>
-        ::-webkit-scrollbar { width: 10px; }
-        ::-webkit-scrollbar-track { background: #110c1f; }
-        ::-webkit-scrollbar-thumb { background: #6b7280; border-radius: 5px; }
-        ::-webkit-scrollbar-thumb:hover { background: #8e80a7; }
-        
-        body {
-            font-family: 'Inter', sans-serif;
-            min-height: 100vh;
-        }
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+  <title>The Hacuasation Hall of Fame (3D Carousel)</title>
+  <script src="https://cdn.tailwindcss.com"></script>
+  <style>
+    ::-webkit-scrollbar { width: 10px; }
+    ::-webkit-scrollbar-track { background: #110c1f; }
+    ::-webkit-scrollbar-thumb { background: #6b7280; border-radius: 5px; }
+    ::-webkit-scrollbar-thumb:hover { background: #8e80a7; }
 
-        #carousel-container {
-            perspective: 1500px;
-            display: flex;
-            justify-content: center;
-            align-items: center;
-        }
+    body {
+      font-family: 'Inter', sans-serif;
+      min-height: 100vh;
+    }
 
-        #gallery {
-            transform-style: preserve-3d;
-            transition: transform 1s cubic-bezier(0.785, 0.135, 0.15, 0.86);
-            position: relative;
-            width: 300px;
-            height: 300px;
-        }
+    #carousel-container {
+      perspective: 1500px;
+      display: flex;
+      justify-content: center;
+      align-items: center;
+    }
 
-        .carousel-card {
-            position: absolute;
-            top: 0;
-            left: 0;
-            width: 300px;
-            height: 300px;
-            overflow: hidden;
-            backface-visibility: hidden;
-        }
+    #gallery {
+      transform-style: preserve-3d;
+      transition: transform 1s cubic-bezier(0.785, 0.135, 0.15, 0.86);
+      position: relative;
+      width: 300px;
+      height: 300px;
+    }
 
-        .loader {
-            border-top-color: #a78bfa;
-            border-right-color: transparent;
-            border-bottom-color: #a78bfa;
-            border-left-color: transparent;
+    .carousel-card {
+      position: absolute;
+      top: 0;
+      left: 0;
+      width: 300px;
+      height: 300px;
+      overflow: hidden;
+      backface-visibility: hidden;
+    }
+
+    .loader {
+      border-top-color: #a78bfa;
+      border-right-color: transparent;
+      border-bottom-color: #a78bfa;
+      border-left-color: transparent;
+    }
+  </style>
+  <script>
+    tailwind.config = {
+      theme: {
+        extend: {
+          colors: {
+            'primary-dark': '#110c1f',
+            'secondary-dark': '#211736',
+            'accent-purple': '#a78bfa',
+          }
         }
-    </style>
-    <script>
-        tailwind.config = {
-            theme: {
-                extend: {
-                    colors: {
-                        'primary-dark': '#110c1f',
-                        'secondary-dark': '#211736',
-                        'accent-purple': '#a78bfa',
-                    }
-                }
-            }
-        }
-    </script>
+      }
+    }
+  </script>
 </head>
 <body class="bg-primary-dark text-gray-100 p-4 sm:p-8">
 
-    <!-- Header Section -->
-    <header class="text-center mb-10">
-        <h1 class="text-5xl sm:text-6xl font-extrabold tracking-tight text-accent-purple mb-2">
-            The Hacuasation Hall of Fame
-        </h1>
-        <p class="text-xl text-gray-400">
-            A gallery of legendary "hacuasations" and top achievements.
-        </p>
-    </header>
+  <header class="text-center mb-10">
+    <h1 class="text-5xl sm:text-6xl font-extrabold tracking-tight text-accent-purple mb-2">
+      The Hacuasation Hall of Fame
+    </h1>
+    <p class="text-xl text-gray-400">
+      A gallery of legendary "hacuasations" and top achievements.
+    </p>
+  </header>
 
-    <!-- Navigation Buttons -->
-    <div id="controls" class="flex justify-center space-x-4 mb-8 hidden">
-        <button id="prev" class="px-6 py-3 bg-accent-purple/90 text-white font-bold rounded-xl shadow-lg hover:bg-accent-purple transition duration-300 transform hover:scale-105">
-            <svg xmlns="http://www.w3.org/2000/svg" class="h-6 w-6 inline" fill="none" viewBox="0 0 24 24" stroke="currentColor">
-              <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M15 19l-7-7 7-7" />
-            </svg> Previous
-        </button>
-        <button id="next" class="px-6 py-3 bg-accent-purple/90 text-white font-bold rounded-xl shadow-lg hover:bg-accent-purple transition duration-300 transform hover:scale-105">
-            Next <svg xmlns="http://www.w3.org/2000/svg" class="h-6 w-6 inline" fill="none" viewBox="0 0 24 24" stroke="currentColor">
-              <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M9 5l7 7-7 7" />
-            </svg>
-        </button>
-    </div>
+  <div id="controls" class="flex justify-center space-x-4 mb-8 hidden">
+    <button id="prev" class="px-6 py-3 bg-accent-purple/90 text-white font-bold rounded-xl shadow-lg hover:bg-accent-purple transition duration-300 transform hover:scale-105">
+      <svg xmlns="http://www.w3.org/2000/svg" class="h-6 w-6 inline" fill="none" viewBox="0 0 24 24" stroke="currentColor">
+        <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M15 19l-7-7 7-7" />
+      </svg> Previous
+    </button>
+    <button id="next" class="px-6 py-3 bg-accent-purple/90 text-white font-bold rounded-xl shadow-lg hover:bg-accent-purple transition duration-300 transform hover:scale-105">
+      Next <svg xmlns="http://www.w3.org/2000/svg" class="h-6 w-6 inline" fill="none" viewBox="0 0 24 24" stroke="currentColor">
+        <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M9 5l7 7-7 7" />
+      </svg>
+    </button>
+  </div>
 
-    <!-- Gallery Container -->
-    <main id="carousel-container" class="h-[600px] max-w-7xl mx-auto mb-12">
-        <div id="gallery">
-            
-            <!-- Debug Card -->
-            <div id="debug-card" class="carousel-card bg-secondary-dark rounded-xl shadow-lg border-4 border-accent-purple/50 p-6 flex flex-col justify-center items-center text-center">
-                <h2 class="text-xl font-bold text-accent-purple mb-3">🛠️ Image Path Check (Raw GitHub)</h2>
-                <p class="text-sm text-gray-300 mb-2">Click the link to verify your image loads directly.</p>
-                <a href="#" id="live-repo-path-link" target="_blank" class="bg-gray-700/50 p-2 rounded text-xs text-green-300 break-all w-full mt-2 hover:bg-gray-600 transition block">LOADING...</a>
-                <p id="load-status" class="mt-4 text-sm font-semibold text-gray-400"></p>
-            </div>
+  <main id="carousel-container" class="h-[600px] max-w-7xl mx-auto mb-12">
+    <div id="gallery">
+      <div id="debug-card" class="carousel-card bg-secondary-dark rounded-xl shadow-lg border-4 border-accent-purple/50 p-6 flex flex-col justify-center items-center text-center">
+        <h2 class="text-xl font-bold text-accent-purple mb-3">🛠️ Image Path Check (Raw GitHub)</h2>
+        <p class="text-sm text-gray-300 mb-2">Click below to confirm your image loads:</p>
+        <a href="#" id="live-repo-path-link" target="_blank" class="bg-gray-700/50 p-2 rounded text-xs text-green-300 break-all w-full mt-2 hover:bg-gray-600 transition block">LOADING...</a>
+        <p id="load-status" class="mt-4 text-sm font-semibold text-gray-400"></p>
+      </div>
 
-            <div id="loading" class="col-span-full text-center py-40 absolute top-0 left-0 right-0 bottom-0 text-white">
-                <div class="flex flex-col items-center justify-center h-full">
-                    <svg class="loader animate-spin h-10 w-10 border-4 rounded-full inline-block mb-4" viewBox="0 0 24 24"></svg>
-                    <p class="text-xl text-gray-400">Loading images from GitHub...</p>
-                </div>
-            </div>
+      <div id="loading" class="col-span-full text-center py-40 absolute top-0 left-0 right-0 bottom-0 text-white">
+        <div class="flex flex-col items-center justify-center h-full">
+          <svg class="loader animate-spin h-10 w-10 border-4 rounded-full inline-block mb-4" viewBox="0 0 24 24"></svg>
+          <p class="text-xl text-gray-400">Loading images from GitHub...</p>
         </div>
-    </main>
-
-    <!-- Footer Info -->
-    <div id="setup-instructions" class="max-w-4xl mx-auto mt-12 p-6 bg-secondary-dark rounded-xl shadow-2xl border border-gray-700">
-        <h2 class="2xl font-bold text-accent-purple mb-4">Setup Information</h2>
-        <p class="text-gray-300">
-            The script is configured for:
-            <code class="bg-gray-700 p-1 rounded text-sm block mt-2 break-all" id="repo-path"></code>
-        </p>
-        <p class="mt-4 text-gray-400 text-sm">
-            <span class="font-bold">Note:</span> Images load directly from the <code>raw.githubusercontent.com</code> CDN.
-        </p>
+      </div>
     </div>
+  </main>
 
-    <script>
-        // =======================================================
-        // === FIXED GITHUB IMAGE LOADING SECTION ===
-        // =======================================================
-        const REPO_OWNER = 'KAYAZzz';
-        const REPO_NAME = 'reschhachuasations';
-        const FOLDER_NAME = 'Screenshots';
-        const MAX_SCREENSHOTS = 50;
-        
-        const ROTATION_RADIUS = 300;
-        let currentAngle = 0;
-        let numCards = 0;
+  <div id="setup-instructions" class="max-w-4xl mx-auto mt-12 p-6 bg-secondary-dark rounded-xl shadow-2xl border border-gray-700">
+    <h2 class="2xl font-bold text-accent-purple mb-4">Setup Information</h2>
+    <p class="text-gray-300">
+      The script is configured for:
+      <code class="bg-gray-700 p-1 rounded text-sm block mt-2 break-all" id="repo-path"></code>
+    </p>
+    <p class="mt-4 text-gray-400 text-sm">
+      <span class="font-bold">Note:</span> Images load directly from <code>raw.githubusercontent.com</code>.
+    </p>
+  </div>
 
-        let IMAGE_FILENAMES = [];
-        for (let i = 1; i <= MAX_SCREENSHOTS; i++) {
-            IMAGE_FILENAMES.push(`${i}.png`);
-        }
+  <script>
+    // === FIXED: GITHUB IMAGE CONFIGURATION ===
+    const REPO_OWNER = 'KAYAZzz';
+    const REPO_NAME = 'reschhachuasations';
+    const FOLDER_NAME = 'Screenshots';
+    const MAX_SCREENSHOTS = 50;
+    const ROTATION_RADIUS = 300;
 
-        const buildImageUrl = (filename) => {
-            return `https://raw.githubusercontent.com/${REPO_OWNER}/${REPO_NAME}/main/${FOLDER_NAME}/${filename}`;
+    let currentAngle = 0;
+    let numCards = 0;
+
+    const buildImageUrl = (filename) => {
+      // ✅ Corrected permanent working URL
+      return `https://raw.githubusercontent.com/${REPO_OWNER}/${REPO_NAME}/main/${FOLDER_NAME}/${filename}`;
+    };
+
+    const gallery = document.getElementById('gallery');
+    const repoPath = document.getElementById('repo-path');
+    const loadingDiv = document.getElementById('loading');
+    const controlsDiv = document.getElementById('controls');
+    const debugCard = document.getElementById('debug-card');
+    const loadStatus = document.getElementById('load-status');
+
+    let successfulCards = [];
+    const IMAGE_FILENAMES = Array.from({ length: MAX_SCREENSHOTS }, (_, i) => `${i + 1}.png`);
+
+    const positionCards = () => {
+      numCards = successfulCards.length;
+      if (numCards === 0) {
+        controlsDiv.classList.add('hidden');
+        return;
+      }
+      const angleStep = 360 / numCards;
+      successfulCards.forEach((card, index) => {
+        const angle = index * angleStep;
+        card.style.transform = `rotateY(${angle}deg) translateZ(${ROTATION_RADIUS}px)`;
+        if (card.id !== 'debug-card') card.onclick = () => rotateCarousel(-angle);
+      });
+      controlsDiv.classList.remove('hidden');
+    };
+
+    const rotateCarousel = (angle) => {
+      currentAngle = angle;
+      gallery.style.transform = `translateZ(-${ROTATION_RADIUS}px) rotateY(${currentAngle}deg)`;
+    };
+
+    const initControls = () => {
+      const angleStep = 360 / numCards;
+      document.getElementById('next').onclick = () => rotateCarousel(currentAngle - angleStep);
+      document.getElementById('prev').onclick = () => rotateCarousel(currentAngle + angleStep);
+      rotateCarousel(0);
+    };
+
+    const initTouchControls = () => {
+      const container = document.getElementById('carousel-container');
+      const angleStep = 360 / numCards;
+      let startX = 0;
+      container.addEventListener('touchstart', e => startX = e.touches[0].clientX, false);
+      container.addEventListener('touchend', e => {
+        const diff = startX - e.changedTouches[0].clientX;
+        if (Math.abs(diff) > 50)
+          rotateCarousel(currentAngle + (diff > 0 ? -angleStep : angleStep));
+      }, false);
+    };
+
+    const generateGallery = () => {
+      const livePathLink = document.getElementById('live-repo-path-link');
+      const example = buildImageUrl('1.png');
+      livePathLink.href = example;
+      livePathLink.textContent = example;
+      repoPath.textContent = example.replace('/1.png', '');
+
+      successfulCards.push(debugCard);
+      let completed = 0;
+
+      IMAGE_FILENAMES.forEach(filename => {
+        const img = new Image();
+        img.src = buildImageUrl(filename);
+        img.onload = () => {
+          const card = document.createElement('div');
+          card.className = 'carousel-card bg-secondary-dark rounded-xl shadow-lg hover:shadow-accent-purple/50 transition duration-300 overflow-hidden transform hover:scale-105 cursor-pointer';
+          const imageEl = document.createElement('img');
+          imageEl.src = img.src;
+          imageEl.alt = filename;
+          imageEl.className = 'w-full h-4/5 object-cover rounded-t-xl';
+          const footer = document.createElement('div');
+          footer.className = 'p-3 border-t border-gray-700 bg-secondary-dark h-1/5 flex items-center justify-center';
+          footer.innerHTML = `<p class="text-sm font-medium text-gray-300 truncate">${filename}</p>`;
+          card.append(imageEl, footer);
+          gallery.append(card);
+          successfulCards.push(card);
+          if (++completed === IMAGE_FILENAMES.length) finishLoading();
         };
-
-        const gallery = document.getElementById('gallery');
-        const repoPath = document.getElementById('repo-path');
-        const loadingDiv = document.getElementById('loading');
-        const controlsDiv = document.getElementById('controls');
-        const debugCard = document.getElementById('debug-card');
-        const loadStatus = document.getElementById('load-status');
-        
-        let successfulCards = [];
-        let touchStartX = 0;
-        let touchEndX = 0;
-        const SWIPE_THRESHOLD = 50;
-
-        const positionCards = () => {
-            numCards = successfulCards.length;
-            if (numCards === 0) {
-                 controlsDiv.classList.add('hidden');
-                 return;
-            }
-            const angleStep = 360 / numCards;
-            successfulCards.forEach((card, index) => {
-                const angle = index * angleStep;
-                card.style.transform = `rotateY(${angle}deg) translateZ(${ROTATION_RADIUS}px)`;
-                if (card.id !== 'debug-card') {
-                    card.onclick = () => rotateCarousel(angle * -1);
-                }
-            });
-            controlsDiv.classList.remove('hidden');
+        img.onerror = () => {
+          if (++completed === IMAGE_FILENAMES.length) finishLoading();
         };
+      });
+    };
 
-        const rotateCarousel = (targetAngle) => {
-            currentAngle = targetAngle;
-            gallery.style.transform = `translateZ(-${ROTATION_RADIUS}px) rotateY(${currentAngle}deg)`;
-        };
+    const finishLoading = () => {
+      loadingDiv.remove();
+      positionCards();
+      initControls();
+      initTouchControls();
+      loadStatus.textContent =
+        successfulCards.length > 1
+          ? `Loaded ${successfulCards.length - 1} image(s) successfully.`
+          : 'No images found!';
+    };
 
-        const initControls = () => {
-            const angleStep = 360 / numCards;
-            document.getElementById('next').onclick = () => rotateCarousel(currentAngle - angleStep);
-            document.getElementById('prev').onclick = () => rotateCarousel(currentAngle + angleStep);
-            rotateCarousel(0);
-        };
-
-        const initTouchControls = () => {
-            const container = document.getElementById('carousel-container');
-            const angleStep = 360 / numCards;
-            container.addEventListener('touchstart', (e) => touchStartX = e.touches[0].clientX, false);
-            container.addEventListener('touchend', (e) => {
-                touchEndX = e.changedTouches[0].clientX;
-                const diff = touchStartX - touchEndX;
-                if (Math.abs(diff) > SWIPE_THRESHOLD) {
-                    rotateCarousel(currentAngle + (diff > 0 ? -angleStep : angleStep));
-                }
-            }, false);
-        };
-
-        const generateGallery = () => {
-            const exampleFilename = '1.png';
-            const baseRawPath = buildImageUrl('');
-            repoPath.textContent = baseRawPath.replace(/\/$/, '');
-            const livePathLink = document.getElementById('live-repo-path-link');
-            livePathLink.textContent = buildImageUrl(exampleFilename);
-            livePathLink.href = buildImageUrl(exampleFilename);
-
-            successfulCards.push(debugCard);
-
-            let attemptsCompleted = 0;
-            const totalImages = IMAGE_FILENAMES.length;
-
-            IMAGE_FILENAMES.forEach((filename) => {
-                const imageUrl = buildImageUrl(filename);
-                const card = document.createElement('div');
-                card.className = 'carousel-card bg-secondary-dark rounded-xl shadow-lg hover:shadow-accent-purple/50 transition duration-300 overflow-hidden transform hover:scale-105 cursor-pointer';
-                card.dataset.filename = filename;
-
-                const img = document.createElement('img');
-                img.src = imageUrl;
-                img.alt = `Achievement: ${filename}`;
-                img.className = 'w-full h-4/5 object-cover object-center rounded-t-xl transition duration-300';
-                img.loading = 'lazy';
-
-                const footer = document.createElement('div');
-                footer.className = 'p-3 border-t border-gray-700 bg-secondary-dark h-1/5 flex items-center justify-center';
-                footer.innerHTML = `<p class="text-sm font-medium text-gray-300 truncate">${filename}</p>`;
-
-                card.appendChild(img);
-                card.appendChild(footer);
-
-                img.onload = function() {
-                    attemptsCompleted++;
-                    successfulCards.push(card);
-                    gallery.appendChild(card);
-                    if (attemptsCompleted === totalImages) {
-                         loadingDiv.remove();
-                         positionCards();
-                         initControls();
-                         initTouchControls();
-                         loadStatus.textContent = successfulCards.length > 1 ? `Successfully loaded ${successfulCards.length - 1} image(s).` : '';
-                    }
-                };
-
-                img.onerror = function() {
-                    attemptsCompleted++;
-                    console.warn(`Failed to load image: ${imageUrl}`);
-                    if (attemptsCompleted === totalImages) {
-                        loadingDiv.remove();
-                        positionCards();
-                        initControls();
-                        initTouchControls();
-                        if (successfulCards.length === 1) {
-                             loadStatus.textContent = 'No images loaded. Check repo visibility!';
-                             loadStatus.classList.add('text-red-400');
-                        }
-                    }
-                };
-            });
-        };
-
-        window.onload = generateGallery;
-    </script>
+    window.onload = generateGallery;
+  </script>
 </body>
 </html>
