@@ -11,9 +11,9 @@
             50% {opacity: 0;}
         }
         @keyframes neon-pulse {
-            0% {box-shadow: 0 0 12px #ffff00, 0 0 25px #ffcc00;}
-            50% {box-shadow: 0 0 18px #fffa65, 0 0 40px #ffff00;}
-            100% {box-shadow: 0 0 12px #ffff00, 0 0 25px #ffcc00;}
+            0% {box-shadow: 0 0 12px #09ff00, 0 0 25px #09ff00;}
+            50% {box-shadow: 0 0 18px #7fff65, 0 0 40px #15ff00;}
+            100% {box-shadow: 0 0 12px #09ff00, 0 0 25px #09ff00;}
         }
         @keyframes trail-glow {
             0% {transform: scaleX(0); opacity: 0;}
@@ -66,10 +66,18 @@
             left: 0;
             width: 100%;
             height: 100%;
-            background-image: url('https://upload.wikimedia.org/wikipedia/commons/e/e0/FullMoon2010.jpg'); 
+            /* Using a placeholder image with similar content */
+            background-image: url('https://placehold.co/1920x1080/000000/ffffff?text=Deep+Space+Background'); 
             background-size: cover;
             background-position: center bottom; 
             z-index: -3; 
+        }
+        /* Fallback for the external moon image */
+        .moon-surface-bg {
+            background-image: url('https://upload.wikimedia.org/wikipedia/commons/e/e0/FullMoon2010.jpg'); 
+            /* Fallback for the fallback */
+            background-image: -webkit-image-set(url('https://upload.wikimedia.org/wikipedia/commons/e/e0/FullMoon2010.jpg') 1x); 
+            background-position: center bottom; 
         }
 
         .starfield-bg {
@@ -93,7 +101,7 @@
             height: 8px; 
             border-radius: 50%;
             box-shadow: 0 0 15px #fff, 0 0 25px rgba(255, 255, 255, 0.7); 
-            animation: shooting-star 4.8s linear forwards; /* Fixed duration < 5s to prevent overlap */
+            animation: shooting-star 4.8s linear forwards;
             z-index: 9999; 
             pointer-events: none;
             opacity: 0;
@@ -132,7 +140,7 @@
 
         #screen-wrapper {
             width: 100%;
-            max-width: 570px;
+            max-width: 750px;
             z-index: 10;
             transform-style: preserve-3d;
             transition: transform 0.08s ease-out;
@@ -159,12 +167,33 @@
             pointer-events: none;
             z-index: 20;
             opacity: 0.5;
+            border-radius: 8px; /* Apply to the wrapper's pseudo-element as well */
         }
         
+        /* New Style for the Coper Count Display */
+        #coper-count {
+            font-size: 1.2em;
+            font-weight: bold;
+            color: #39ff14; /* Neon Green */
+            text-align: center;
+            padding: 15px 20px;
+            margin: 0 auto; 
+            border-bottom: 3px solid rgba(57, 255, 20, 0.5);
+            background-color: rgba(1, 21, 3, 0.9);
+            box-shadow: 0 0 15px rgba(57, 255, 20, 0.7);
+            width: 100%;
+            box-sizing: border-box;
+            display: block;
+            position: sticky; /* Make it sticky at the top of the content area */
+            top: 0; 
+            z-index: 30;
+            text-transform: uppercase;
+        }
+
         .image-box {
             background-color: rgba(13, 18, 23, 0.9); 
             border-radius: 4px;
-            border: 1px solid rgba(255, 215, 0, 0.4); 
+            border: 1px solid rgba(30, 255, 0, 0.4); 
             
             animation: neon-pulse 3s ease-in-out infinite; 
             
@@ -178,11 +207,11 @@
 
         .image-box:hover {
             box-shadow: 
-                0 0 30px #ffff00, 
-                0 0 60px rgba(255, 215, 0, 0.8), 0 0 90px rgba(255, 215, 0, 0.6);
+                0 0 30px #09ff00, 
+                0 0 60px rgba(9, 255, 0, 0.8), 0 0 90px rgba(21, 255, 0, 0.6);
             animation: none; 
             transform: translateY(-3px) scale(1.005); 
-            border-color: #ffff00; 
+            border-color: #00ff0d; 
         }
         
         .image-box::before {
@@ -192,7 +221,7 @@
             left: 0;
             width: 100%;
             height: 100%;
-            background: linear-gradient(to right, rgba(255, 215, 0, 0), rgba(255, 215, 0, 0.4), rgba(255, 215, 0, 0));
+            background: linear-gradient(to right, rgba(255, 215, 0, 0), rgb(13, 68, 6), rgba(255, 215, 0, 0));
             transform-origin: left;
             transform: scaleX(0);
             opacity: 0;
@@ -233,8 +262,7 @@
             margin: 40px auto;
             transition: 0.3s;
             z-index: 25; 
-            position: sticky;
-            top: 20px;
+            position: relative; /* Changed from sticky to relative to flow below the counter */
             transform: translateZ(50px);
             animation: none;
         }
@@ -245,6 +273,10 @@
             color: #39ff14;
             display: inline-block;
             margin-left: 8px;
+        }
+        
+        .list-container {
+            padding-top: 20px; /* Add padding below the sticky counter */
         }
     </style>
 </head>
@@ -257,6 +289,8 @@
     <div class="shooting-star" id="shooting-star-template"></div>
 
     <div id="screen-wrapper">
+        <!-- New element for displaying the coper count at the top -->
+        <p id="coper-count">STATUS: STANDBY...</p>
         <div class="list-container" id="list-container">
             <p id="loading-text">C:\\> INITIATING LUNAR OPS INTERFACE...</p>
         </div>
@@ -271,6 +305,7 @@
         const screenWrapper = document.getElementById('screen-wrapper');
         const listContainer = document.getElementById('list-container');
         const loadingText = document.getElementById('loading-text');
+        const coperCountDisplay = document.getElementById('coper-count'); // New reference
 
         // Function to create and manage the single shooting star cycle
         function startShootingStarCycle() {
@@ -307,23 +342,31 @@
             const apiUrl = `https://api.github.com/repos/${GITHUB_USERNAME}/${REPO_NAME}/contents/${FOLDER_PATH}?ref=${BRANCH_NAME}`;
             
             try {
-                loadingText.textContent = "C:\\> ACCESSING LUNAR DATA NETWORK...";
+                coperCountDisplay.textContent = "STATUS: INITIALIZING SCAN...";
+                loadingText.textContent = "C:\\> INITIATING LUNAR OPS INTERFACE...";
                 await new Promise(r => setTimeout(r, 800));
                 
+                coperCountDisplay.textContent = "STATUS: ACCESSING GITHUB API...";
+                loadingText.textContent = "C:\\> ACCESSING LUNAR DATA NETWORK...";
+                await new Promise(r => setTimeout(r, 600));
+
+                coperCountDisplay.textContent = "STATUS: ESTABLISHING SECURE ORBITAL LINK...";
                 loadingText.textContent = "C:\\> ESTABLISHING SECURE ORBITAL LINK...";
                 await new Promise(r => setTimeout(r, 600));
 
                 const response = await fetch(apiUrl);
                 
                 if (!response.ok) {
-                    throw new Error(`ERROR 404: REPOSITORY NOT FOUND. ABORTING.`);
+                    throw new Error(`ERROR ${response.status}: REPOSITORY NOT FOUND. ABORTING.`);
                 }
                 
+                coperCountDisplay.textContent = "STATUS: DECRYPTING PAYLOAD...";
                 loadingText.textContent = "C:\\> DECRYPTING VISUAL LOGS...";
                 await new Promise(r => setTimeout(r, 700));
 
                 const files = await response.json();
                 
+                coperCountDisplay.textContent = "STATUS: RECONSTRUCTING HOLO-PROJECTIONS...";
                 loadingText.textContent = "C:\\> RECONSTRUCTING HOLO-PROJECTIONS...";
                 await new Promise(r => setTimeout(r, 600));
                 
@@ -345,16 +388,29 @@
                         img.className = 'screenshot-image';
                         img.src = url;
                         img.alt = 'Repository screenshot';
+                        img.onerror = function() {
+                            this.onerror = null;
+                            this.src = 'https://placehold.co/700x400/800000/ffffff?text=ERROR+404:+FILE+MISSING';
+                        };
 
                         box.appendChild(img);
                         listContainer.appendChild(box);
                     });
+                    
+                    // Final successful count update
+                    const count = imageUrls.length;
+                    coperCountDisplay.textContent = `[ ${count} ] COPERS DETECTED.`;
+                    
                 } else {
+                    // Final zero count/error update
+                    coperCountDisplay.textContent = "STATUS: NO IMAGE FILES FOUND. SCAN COMPLETE.";
                     loadingText.textContent = "C:\\> ERROR: IMAGE DATA CORRUPTED. NO VISUALS.";
                     loadingText.style.display = 'block';
                 }
             } catch (error) {
                 console.error("Error fetching images:", error);
+                // Final error update
+                coperCountDisplay.textContent = "STATUS: CRITICAL FAILURE.";
                 loadingText.textContent = `C:\\> CRITICAL SYSTEM BREACH: ${error.message}`;
                 loadingText.style.display = 'block';
             }
@@ -365,6 +421,3 @@
 
 </body>
 </html>
-
-
-
